@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [1.0.0] - 2026-11-01
 
 ### Added
 - `OmniplexUk::Cinema.all` and `OmniplexUk::Cinema.new(id)` for Omniplex's UK cinemas in Great Britain and Northern Ireland, from the site picker on the omniplexcinemas.co.uk home page, with addresses and coordinates from each venue's listings page, or OpenStreetMap where it has none.
