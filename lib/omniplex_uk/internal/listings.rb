@@ -36,7 +36,6 @@ module OmniplexUk
       # Films whose genres include it are live and recorded events
       EVENT_GENRE = 'Event'.freeze
       MILLISECONDS = 1000
-      TIME_ZONE = 'Europe/London'.freeze
 
       # @return [Date, nil] the day this page lists
       attr_reader :date
@@ -84,12 +83,12 @@ module OmniplexUk
       end
 
       def local_date(seconds)
-        TZInfo::Timezone.get(TIME_ZONE).to_local(Time.at(seconds).utc).to_date
+        Cinebase::London.date(Time.at(seconds))
       end
 
       def starting_at(hour, minute)
         local = Time.utc(date.year, date.month, date.day, hour, minute)
-        TZInfo::Timezone.get(TIME_ZONE).local_to_utc(local) { |periods| periods.first }.utc
+        Cinebase::London.utc(local)
       end
 
       def text(html)

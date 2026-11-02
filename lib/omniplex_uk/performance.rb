@@ -67,7 +67,7 @@ module OmniplexUk
     # @return [Array<OmniplexUk::Performance>]
     def self.at(
       cinema_id,
-      from: TZInfo::Timezone.get(TIME_ZONE).now.to_date,
+      from: Cinebase::London.today,
       to: from + 13
     )
       raise ArgumentError, 'to must not precede from' if to < from

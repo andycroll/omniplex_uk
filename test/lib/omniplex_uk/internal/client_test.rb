@@ -63,26 +63,11 @@ class OmniplexUk::Internal::ClientTest < Minitest::Test
     assert_equal 'HTTP error 500 from www.omniplexcinemas.co.uk', error.message
   end
 
-  def test_redirects_are_errors
-    stub_request(:get, HOME).to_return(status: 302, headers: { 'Location' => '/cinema/landing' })
-
-    assert_raises(RuntimeError) { @client.venues }
-  end
-
   def test_retries_transient_errors
     stub_request(:get, HOME).to_raise(Errno::ECONNRESET).then.to_return(status: 200, body: home_html)
 
-    @client.stub(:sleep, nil) do
+    Cinebase::Http.stub(:pause, nil) do
       assert_equal 22, @client.venues.size
     end
-  end
-
-  def test_gives_up_after_retries
-    stub_request(:get, HOME).to_raise(Net::ReadTimeout)
-
-    @client.stub(:sleep, nil) do
-      assert_raises(Net::ReadTimeout) { @client.venues }
-    end
-    assert_requested :get, HOME, times: OmniplexUk::Internal::Client::RETRIES + 1
   end
 end

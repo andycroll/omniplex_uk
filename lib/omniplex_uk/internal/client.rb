@@ -1,5 +1,4 @@
 require 'cgi/escape'
-require 'net/http'
 
 module OmniplexUk
   # Internal utility classes: Do not use
@@ -19,10 +18,10 @@ module OmniplexUk
 
       # Pages claim ISO-8859-1 but mix UTF-8 with Windows-1252 apostrophes
       LEGACY_ENCODING = Encoding::Windows_1252
-      RETRIES = 2
-      TRANSIENT_ERRORS = [
-        EOFError, Errno::ECONNRESET, Errno::ECONNREFUSED, Net::OpenTimeout, Net::ReadTimeout, OpenSSL::SSL::SSLError
-      ].freeze
+
+      def initialize
+        @http = Cinebase::Http.new(keep_alive: true)
+      end
 
       # UK venues in the home page's site picker
       # @return [Array<Hash>] with :url, :name and :code, e.g.
@@ -58,8 +57,7 @@ module OmniplexUk
       end
 
       def close
-        @http.finish if @http&.started?
-        @http = nil
+        @http.close
       end
 
       private
@@ -71,35 +69,11 @@ module OmniplexUk
       end
 
       def get(path)
-        attempts = 0
-        begin
-          response = http.request(Net::HTTP::Get.new(path))
-        rescue *TRANSIENT_ERRORS
-          close
-          attempts += 1
-          raise if attempts > RETRIES
-
-          sleep(attempts)
-          retry
-        end
-
-        if response.is_a?(Net::HTTPSuccess)
-          decode(response.body)
-        else
-          # Omit response bodies from errors, and never follow redirects.
-          raise "HTTP error #{response.code} from #{URI(WEBSITE).host}"
-        end
-      end
-
-      def http
-        @http ||= begin
-          uri = URI(WEBSITE)
-          Net::HTTP.start(uri.host, uri.port, use_ssl: true, open_timeout: 10, read_timeout: 30, max_retries: 0)
-        end
+        decode(@http.get(WEBSITE + path))
       end
 
       def decode(body)
-        body.dup.force_encoding(Encoding::UTF_8).scrub do |bytes|
+        body.scrub do |bytes|
           bytes.force_encoding(LEGACY_ENCODING).encode(Encoding::UTF_8, invalid: :replace, undef: :replace)
         end
       end
