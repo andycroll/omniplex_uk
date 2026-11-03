@@ -64,7 +64,8 @@ class OmniplexUk::PerformanceTest < Minitest::Test
   def test_summer_dates_and_times
     performance = performances_at('OMP_SUND').last
 
-    assert_equal 'Royal Ballet and Opera: Romeo & Juliet', performance.film_name
+    assert_equal 'Romeo & Juliet', performance.film_name
+    assert_equal Cinebase::Event.new(name: 'Royal Ballet and Opera'), performance.event
     assert_equal Date.new(2027, 5, 25), performance.showing_on
     assert_equal Time.utc(2027, 5, 25, 18, 15), performance.starting_at
     assert_equal %w(arts), performance.variant
