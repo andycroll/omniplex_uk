@@ -34,6 +34,18 @@ class OmniplexUk::PerformanceTest < Minitest::Test
     assert_not_requested :get, showtimes_url('OMP_SUND', '2026-11-04')
   end
 
+  def test_at_skips_test_events
+    showings = glasgow_showings
+    listing = Struct.new(:showings).new([showings.first.with(title: 'Live event test 1 (60)'), *showings])
+
+    OmniplexUk::Performance.stub(:listings, [listing]) do
+      film_names = performances_at('OMP_SUND').map(&:film_name)
+
+      assert_equal showings.count, film_names.count
+      refute_includes film_names, 'Live event test 1 (60)'
+    end
+  end
+
   def test_at_rejects_a_backwards_range
     assert_raises(ArgumentError) { OmniplexUk::Performance.at('OMP_SUND', from: TODAY, to: TODAY - 1) }
   end

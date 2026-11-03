@@ -58,6 +58,9 @@ module OmniplexUk
     COUNTRY_LANGUAGES = { 'Poland' => 'Polish' }.freeze
     COUNTRY = /\((#{COUNTRY_LANGUAGES.keys.join('|')})\)/
 
+    # Placeholder sessions Omniplex lists while setting up a broadcast
+    TEST_EVENT = /\ALive event test\b/i
+
     # Performances within an inclusive range of showing dates. The website
     # lists one day per page, so this reads the venue's advertised dates
     # from its first page, then one page for each other date in the range.
@@ -76,7 +79,7 @@ module OmniplexUk
       if cinema.url.empty?
         []
       else
-        showings = listings(cinema.id, from..to).flat_map(&:showings)
+        showings = listings(cinema.id, from..to).flat_map(&:showings).reject { |showing| showing.title.match?(TEST_EVENT) }
         performances = showings.map do |showing|
           new(attributes(showing).merge(cinema_id: cinema.id, cinema_name: cinema.name))
         end
